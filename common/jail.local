@@ -1,0 +1,23 @@
+[DEFAULT]
+banaction = iptables-allports
+backend = polling
+usedns = no
+ignoreip = 127.0.0.1/8 ::1
+ignoreself = true
+bantime = 10m
+bantime.increment = true
+bantime.factor = 2
+bantime.maxtime = 1d
+
+[sshd]
+enabled = false
+
+[sshd-ddos]
+enabled = false
+
+[http-flood]
+enabled = true
+filter = http-flood
+logpath = /var/log/security/access.log
+findtime = 10s
+maxretry = 60

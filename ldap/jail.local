@@ -1,0 +1,18 @@
+[DEFAULT]
+backend = polling
+usedns = no
+ignoreip = 127.0.0.1/8 ::1
+bantime = 10m
+
+[sshd]
+enabled = false
+
+[ldaps-connections]
+enabled = true
+filter = ldaps-connections
+logpath = /var/log/security/access.log
+findtime = 10s
+maxretry = 60
+port = 636
+protocol = tcp
+action = iptables-multiport[name=ldaps-connections, port="636", protocol=tcp]

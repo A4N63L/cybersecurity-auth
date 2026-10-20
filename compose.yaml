@@ -1,0 +1,110 @@
+# Merged by backend/lab.sh with --project-directory pointing to the backend.
+services:
+  openldap:
+    image: ciber-p1-games-openldap:dev
+    build:
+      context: ${AUTH_PROJECT_DIR:-../videojuegos-auth}
+      dockerfile: ldap/Dockerfile
+      network: host
+    hostname: openldap
+    environment:
+      LDAP_ORGANISATION: Games Lab
+      LDAP_DOMAIN: example.com
+      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:?Configura LDAP_ADMIN_PASSWORD en .env}
+    cap_add: [NET_ADMIN]
+    volumes:
+      - ldap_data:/var/lib/ldap
+      - ldap_config:/etc/ldap/slapd.d
+      - ${LAB_DATA_DIR:-./.lab-data}/tls/ca.crt:/tls/ca.crt:ro
+      - ${LAB_DATA_DIR:-./.lab-data}/tls/ldap.crt:/tls/ldap.crt:ro
+      - ${LAB_DATA_DIR:-./.lab-data}/tls/ldap.key:/tls/ldap.key:ro
+      - ${LAB_DATA_DIR:-./.lab-data}/tls/dhparam.pem:/tls/dhparam.pem:ro
+    networks: [lab]
+    healthcheck:
+      test: [CMD, python3, /opt/security/health.py]
+      interval: 10s
+      timeout: 5s
+      retries: 25
+      start_period: 30s
+  ldap-init:
+    image: ciber-p1-games-openldap:dev
+    entrypoint: [/bin/sh, /init/init.sh]
+    environment:
+      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:?Configura LDAP_ADMIN_PASSWORD}
+      ALICE_PASSWORD: ${ALICE_PASSWORD:?Configura ALICE_PASSWORD}
+      BOB_PASSWORD: ${BOB_PASSWORD:?Configura BOB_PASSWORD}
+      LDAPTLS_CACERT: /tls/ca.crt
+      LDAPTLS_REQCERT: demand
+    volumes:
+      - ${AUTH_PROJECT_DIR:-../videojuegos-auth}/ldap:/init:ro
+      - ${LAB_DATA_DIR:-./.lab-data}/tls/ca.crt:/tls/ca.crt:ro
+    depends_on:
+      openldap: {condition: service_healthy}
+    networks: [lab]
+    healthcheck: {disable: true}
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configura POSTGRES_PASSWORD}
+    volumes: [keycloak_db:/var/lib/postgresql/data]
+    networks: [lab]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U keycloak -d keycloak]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  keycloak:
+    image: ciber-p1-games-keycloak:dev
+    build:
+      context: ${AUTH_PROJECT_DIR:-../videojuegos-auth}
+      dockerfile: keycloak/Dockerfile
+      network: host
+    cap_add: [NET_ADMIN]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Configura KEYCLOAK_ADMIN_PASSWORD}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:?Configura POSTGRES_PASSWORD}
+      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:?Configura LDAP_ADMIN_PASSWORD}
+      KC_HOSTNAME: http://localhost:8082
+      KC_HTTP_ENABLED: "true"
+      KC_HTTP_HOST: 0.0.0.0
+      KC_HEALTH_ENABLED: "true"
+      KC_TRUSTSTORE_PATHS: /tls/ca.crt
+      KC_HTTP_ACCESS_LOG_ENABLED: "true"
+      KC_HTTP_ACCESS_LOG_FILE_ENABLED: "true"
+      KC_HTTP_ACCESS_LOG_PATTERN: '%a - - %t "%m %R" %s'
+    ports: ["127.0.0.1:8082:8080"]
+    volumes:
+      - ${AUTH_PROJECT_DIR:-../videojuegos-auth}/keycloak/import:/opt/keycloak/data/import:ro
+      - ${LAB_DATA_DIR:-./.lab-data}/tls/ca.crt:/tls/ca.crt:ro
+    depends_on:
+      postgres: {condition: service_healthy}
+      ldap-init: {condition: service_completed_successfully}
+    networks: [lab]
+    healthcheck:
+      test: [CMD, python3, /opt/security/health.py]
+      interval: 10s
+      timeout: 5s
+      retries: 40
+      start_period: 90s
+  auth-migrate:
+    image: ciber-p1-games-keycloak:dev
+    entrypoint: [python3, /migration/migrate.py]
+    environment:
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Configura KEYCLOAK_ADMIN_PASSWORD}
+      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:?Configura LDAP_ADMIN_PASSWORD}
+    volumes:
+      - ${AUTH_PROJECT_DIR:-../videojuegos-auth}/keycloak/migrate.py:/migration/migrate.py:ro
+    depends_on:
+      keycloak: {condition: service_healthy}
+    networks: [lab]
+    healthcheck: {disable: true}
+volumes:
+  ldap_data:
+  ldap_config:
+  keycloak_db:

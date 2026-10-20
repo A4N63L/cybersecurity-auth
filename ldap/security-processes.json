@@ -1,0 +1,1 @@
+[{"command":["/usr/sbin/slapd","-h","ldaps://0.0.0.0:636/ ldapi:///","-u","openldap","-g","openldap","-d","256"],"log":"/var/log/security/access.log"}]

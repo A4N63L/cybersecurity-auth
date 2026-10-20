@@ -1,0 +1,2 @@
+[http-flood]
+logpath = /opt/keycloak/data/log/keycloak-http-access.log

@@ -1,0 +1,1 @@
+[{"command":["runuser","-u","keycloak","--","/opt/keycloak/bin/kc.sh","start-dev","--import-realm"]}]
