@@ -1,0 +1,22 @@
+
+                     __     _
+   ____  __  _______/ /__  (_)
+  / __ \/ / / / ___/ / _ \/ /
+ / / / / /_/ / /__/ /  __/ /
+/_/ /_/\__,_/\___/_/\___/_/   v3.11.1
+
+		projectdiscovery.io
+
+[INF] Nuclei Config Directory: /root/.config/nuclei
+[INF] Nuclei Cache Directory: /root/.cache/nuclei
+[INF] PDCP Directory: /root/.pdcp
+[INF] Current nuclei version: v3.11.1 (unknown) - remove '-duc' flag to enable update checks
+[INF] Current nuclei-templates version:  (unknown) - remove '-duc' flag to enable update checks
+[INF] New templates added in latest release: 48
+[INF] Templates loaded for current scan: 1
+[INF] Executing 1 signed templates from projectdiscovery/nuclei-templates
+[INF] Targets loaded for current scan: 1
+[ldap-anonymous-login-detect] LDAP Anonymous Login - Detect (@pussycat0x,@s0obi,@0x_akoko) [medium]
+[ldap-anonymous-login-detect] [javascript] [medium] openldap:636
+[INF] Scan completed in 275.762416ms. 1 matches found.
+[0:00:00] | Templates: 1 | Hosts: 1 | RPS: 3 | Matched: 1 | Errors: 0 | Requests: 1/1 (100%)
