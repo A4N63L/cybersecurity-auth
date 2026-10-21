@@ -4,6 +4,28 @@ Proyecto local `videojuegos-auth`, hermano de frontend y backend. Única fuente 
 configuración de Keycloak, OpenLDAP, su PostgreSQL y los componentes de seguridad
 compartidos. No contiene credenciales, datos ni certificados generados.
 
+Repositorio publicado: https://github.com/A4N63L/cybersecurity-auth.
+
+## Procedencia y correspondencia con el repositorio anterior
+
+Este repositorio es **nuevo**. La infraestructura ya existía dentro de
+`cybersecurity-backend`, no en un repositorio LDAP independiente identificado:
+`infra/ldap/`, `infra/keycloak/` y los servicios OpenLDAP, Keycloak y PostgreSQL
+de su `compose.yaml`. Esos archivos se separaron aquí y se adaptaron a LDAPS y
+Fail2Ban; el backend conserva la orquestación y el historial anterior.
+
+La procedencia se puede comprobar en el
+[commit original del backend](https://github.com/A4N63L/cybersecurity-backend/tree/564ee37342b7c16f89fe556f24e7a3b276eede30/infra).
+La plantilla de usuarios se conservó idéntica; los scripts y el proveedor LDAP
+se actualizaron para TLS. El commit inicial de este repositorio es `c55bda7`:
+no se presenta como continuación del historial de un tercer repositorio previo.
+
+No se encontró otro repositorio LDAP anterior dejado sin actualizar en el directorio
+de trabajo ni en la cuenta consultada. Esto difiere de la lectura literal del
+enunciado que pide tres repositorios anteriores y solo uno nuevo: se reutilizaron
+frontend/backend, y se crearon auth y loadtest. Consulta el
+[contraste y la corrección mínima pendiente](https://github.com/A4N63L/cybersecurity-backend/blob/main/CONTRASTE-ENUNCIADO.md).
+
 ## Arranque integrado
 
 Desde `../videojuegos-backend`: `bash lab.sh up`. No levantes este fragmento de
